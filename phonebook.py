@@ -2,52 +2,58 @@
 import sys
 import sqlite3
 
-
-conn = sqlite3.connect("phonebook.db")
-c = conn.cursor()
-	
+def connectToDb(db_name):
+	conn = sqlite3.connect(db_name)
+	c = conn.cursor()
+	return conn, c
 
 def create(phonebook_name):
-	c.execute("CREATE TABLE IF NOT EXISTS {0} (name text, phone text)".format(phonebook_name))
+	conn, c = connectToDb(phonebook_name)
+	c.execute("CREATE TABLE IF NOT EXISTS phonebook (name text, phone text)")
 	conn.commit()
-	print "Phonebook {0} created successfully".format(phonebook_name)
+	return "Phonebook {0} created successfully".format(phonebook_name)
 	
 
 def add(name, phone_number, phonebook_name):
-	c.execute("INSERT INTO {0} VALUES(?,?)".format(phonebook_name),(name,phone_number))
+	conn, c = connectToDb(phonebook_name)
+	c.execute("INSERT INTO phonebook VALUES(?,?)",(name,phone_number))
 	conn.commit()
-	print "{0} {1} added successfully".format(name, phone_number)
+	return "{0} {1} added successfully".format(name, phone_number)
 	
 
 def change(name, phone_number, phonebook_name):
-	c.execute("UPDATE {0} SET phone = ? WHERE name = ?".format(phonebook_name),(phone_number, name))
+	conn, c = connectToDb(phonebook_name)
+	c.execute("UPDATE phonebook SET phone = ? WHERE name = ?",(phone_number, name))
 	conn.commit()
-	print "{0} changed successfully".format(name)
+	return "{0} changed successfully".format(name)
 	
 
 def lookup(name, phonebook_name):
-	c.execute("SELECT * FROM {0} WHERE name LIKE ?".format(phonebook_name), ('%'+name+'%',))
+	conn, c = connectToDb(phonebook_name)
+	c.execute("SELECT * FROM phonebook WHERE name LIKE ?",('%'+name+'%',))
 	result = c.fetchall()
 	if len(result) == 0:
-		print "{0} does not exist in the db".format(name)
+		return "{0} does not exist in the db".format(name)
 	else:
 		for tup in result:
-			print "{0} {1}".format(tup[0], tup[1])
+			return "{0} {1}".format(tup[0], tup[1])
 	
 
 def reverse_lookup(phone_number, phonebook_name):
-	c.execute("SELECT * FROM {0} WHERE phone = ?".format(phonebook_name),(phone_number,))
+	conn, c = connectToDb(phonebook_name)
+	c.execute("SELECT * FROM phonebook WHERE phone = ?",(phone_number,))
 	result = c.fetchone()
 	if result == None:
-		print "Phone number {0} does not exist in the db".format(phone_number)
+		return "Phone number {0} does not exist in the db".format(phone_number)
 	else:
-		print "{0} {1}".format(result[0], result[1])
+		return "{0} {1}".format(result[0], result[1])
 	
 
 def remove(name, phonebook_name):
-	c.execute("DELETE FROM {0} WHERE name = ?".format(phonebook_name),(name,))
+	conn, c = connectToDb(phonebook_name)
+	c.execute("DELETE FROM phonebook WHERE name = ?",(name,))
 	conn.commit()
-	print "{0} deleted successfully".format(name)
+	return "{0} deleted successfully".format(name)
 	
 
 
